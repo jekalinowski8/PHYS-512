@@ -1,2 +1,2 @@
 # PHYS-512
-Projects for PHYS 512.
+Jonathan Kalinowski's projects for PHYS 512.
