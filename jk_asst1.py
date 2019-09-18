@@ -93,4 +93,58 @@ def problem2(T, graph=False):
         plt.scatter(T,v,color='r',marker='x')
         plt.plot(ts,interp, color='k')
     return(v[0])
+    
+def problem3(fun, a, b, tol):
+    x=np.linspace(a,b,5)
+    #np.median(np.diff(x))
+    y=fun(x)
+    neval=len(x) #let's keep track of function evaluations
+    f1=(y[0]+4*y[2]+y[4])/6.0*(b-a)
+    f2=(y[0]+4*y[1]+2*y[2]+4*y[3]+y[4])/12.0*(b-a)
+    myerr=np.abs(f2-f1)
+    print([a,b,f1,f2])
+    if (myerr<tol):
+        #return (f2)/1.0,myerr,neval
+        return (16.0*f2-f1)/15.0,myerr,neval
+    else:
+        mid=0.5*(b+a)
+        f_left,err_left,neval_left=problem3(fun,a,mid,tol/2.0)
+        f_right,err_right,neval_right=problem3(fun,mid,b,tol/2.0)
+        neval=neval+neval_left+neval_right
+        f=f_left+f_right
+        err=err_left+err_right
+        return f,err,neval
+
+
+def problem4():
+    def messyboi(theta,z,R):
+        
+        
+    
+
+
+
+
+def simple_integrate(fun,a,b,tol):
+    x=np.linspace(a,b,5)
+    #np.median(np.diff(x))
+    y=fun(x)
+    neval=len(x) #let's keep track of function evaluations
+    f1=(y[0]+4*y[2]+y[4])/6.0*(b-a)
+    f2=(y[0]+4*y[1]+2*y[2]+4*y[3]+y[4])/12.0*(b-a)
+    myerr=np.abs(f2-f1)
+    print([a,b,f1,f2])
+    if (myerr<tol):
+        #return (f2)/1.0,myerr,neval
+        return (16.0*f2-f1)/15.0,myerr,neval
+    else:
+        mid=0.5*(b+a)
+        f_left,err_left,neval_left=simple_integrate(fun,a,mid,tol/2.0)
+        f_right,err_right,neval_right=simple_integrate(fun,mid,b,tol/2.0)
+        neval=neval+neval_left+neval_right
+        f=f_left+f_right
+        err=err_left+err_right
+        return f,err,neval
+
+
         
