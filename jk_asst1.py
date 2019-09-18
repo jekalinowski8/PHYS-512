@@ -52,10 +52,45 @@ def problem1(numh = 1000, x=1):
     hs = np.logspace(-16,1,num=numh)
     errs1 = np.abs(np.exp(x)-(-np.exp(x+2*hs)+8*np.exp(x+hs)+np.exp(x-2*hs)-8*np.exp(x-hs))/(12*hs))
     plt.plot(np.log10(hs), np.log10(errs1), label='exp(x)')
-    #x=x*100
     errs2= np.abs(.01*expo(x)-((-expo(x+(2*hs))+8*expo(x+hs)+expo(x-2*hs)-8*expo(x-hs))/(12*hs)))
     plt.plot(np.log10(hs), np.log10(errs2), label='exp(0.01*x)')
     plt.legend()
     
 #Question 2: 
+"""
+
+
+"""
+def problem2(T, graph=False): 
+    if (T<1.4 or T>500): 
+        print("T must be between 1.4K and 500K for the interpolation")
+        return
+    [temps, vs, dvdts ] = np.transpose(np.loadtxt('lakeshore.txt')) 
+    dvdts = .001*dvdts
+    i=0
+    while(temps[i]<T):
+        i=i+1
+    i=i-1
+    t1 = temps[i]
+    t2 = temps[i+1]
+    v1 = vs[i]
+    v2 = vs[i+1]
+    dv1 = dvdts[i]
+    dv2 = dvdts[i+1]
+    mat = [[t1*3,t1**2,t1,1],[t2**3,t2**2,t2**1,1],[3*t1**2,2*t1,1,0],[3*t2**2,2*t2,1,0]]
+    matv = [[v1],[v2],[dv1],[dv2]]
+    coeffs = np.dot(np.linalg.inv(mat),matv)
+    v= np.polyval(coeffs,T)        
     
+    if(graph):
+        plt.close()
+        ts = np.linspace(1.4,499,num=10000)
+        np.append(ts,temps)
+        interp = []
+        for t in ts: 
+            interp.append(problem2(t))
+        plt.scatter(temps, vs, color='b',)
+        plt.scatter(T,v,color='r',marker='x')
+        plt.plot(ts,interp, color='k')
+    return(v[0])
+        
