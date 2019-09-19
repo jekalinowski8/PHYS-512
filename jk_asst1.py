@@ -20,13 +20,13 @@ f'(x)=(-f(x+2h)+8f(x+h)+f(x-2h)-8f(x-h))/12h + h^4*f^(5)(x)/30
 #b)
 """
 With the consideration of machine precsion, the error in f'(x) becomes: 
-    
+
 Error = h^4*f^(5)(x)/30 + e*f(x)/12h^2
 
 where e is the machine epsilon, the floating point error. Taking a derivative 
 w.r.t h and setting it equal to 0, and then solving for h, gives an approximate
 value of h that minimizes the error of the derivative estimate. This is:
-    
+
 h=(5e*f(x)/8*f^(5)(x))^(1/5) ~ e^(1/5)
 
 
@@ -55,7 +55,7 @@ def problem1(numh = 1000, x=1):
     errs2= np.abs(.01*expo(x)-((-expo(x+(2*hs))+8*expo(x+hs)+expo(x-2*hs)-8*expo(x-hs))/(12*hs)))
     plt.plot(np.log10(hs), np.log10(errs2), label='exp(0.01*x)')
     plt.legend()
-    
+
 #Question 2: 
 """
 
@@ -81,70 +81,93 @@ def problem2(T, graph=False):
     matv = [[v1],[v2],[dv1],[dv2]]
     coeffs = np.dot(np.linalg.inv(mat),matv)
     v= np.polyval(coeffs,T)        
-    
+    sec_deriv = (dv2-dv1)/(t2-t1)
+    err = abs(0.5*sec_deriv*(T-t1)**2)
     if(graph):
         plt.close()
-        ts = np.linspace(1.4,499,num=10000)
+        ts = np.linspace(1.40,499,num=10000)
         np.append(ts,temps)
         interp = []
+        errs = []
         for t in ts: 
-            interp.append(problem2(t))
-        plt.scatter(temps, vs, color='b',)
-        plt.scatter(T,v,color='r',marker='x')
-        plt.plot(ts,interp, color='k')
-    return(v[0])
+            val, err = problem2(t)
+            interp.append(val)
+            errs.append(err)
+        plt.scatter(temps, vs, color='b', label='Data')
+        plt.scatter(T,v,color='r',marker='x', label='Input')
+        plt.plot(ts,interp, color='k', label='Interpolated Curve')
+        plt.errorbar(ts,interp,yerr=errs)
+        plt.legend()
+    if (not graph):
+        print("(Voltage, Error Estimate)=")
+    return v[0],err
+                
+    
+    
+    
+    
     
 def problem3(fun, a, b, tol):
-    x=np.linspace(a,b,5)
-    #np.median(np.diff(x))
-    y=fun(x)
-    neval=len(x) #let's keep track of function evaluations
-    f1=(y[0]+4*y[2]+y[4])/6.0*(b-a)
-    f2=(y[0]+4*y[1]+2*y[2]+4*y[3]+y[4])/12.0*(b-a)
-    myerr=np.abs(f2-f1)
-    print([a,b,f1,f2])
-    if (myerr<tol):
-        #return (f2)/1.0,myerr,neval
-        return (16.0*f2-f1)/15.0,myerr,neval
-    else:
-        mid=0.5*(b+a)
-        f_left,err_left,neval_left=problem3(fun,a,mid,tol/2.0)
-        f_right,err_right,neval_right=problem3(fun,mid,b,tol/2.0)
-        neval=neval+neval_left+neval_right
-        f=f_left+f_right
-        err=err_left+err_right
-        return f,err,neval
+    if ('evals' in globals()):
+        global evals
+        del evals
+    def simple_integrate_efficient(fun, a, b, tol):
+        if not('evals' in globals()):
+            global evals 
+            evals = {}
+        x=np.linspace(a,b,5) 
+        for xs in x: 
+            if xs not in evals: 
+                evals[xs]=fun(xs)
+        f1=(evals[x[0]]+4*evals[x[2]]+evals[x[4]])/6.0*(b-a)
+        f2=(evals[x[0]]+4*evals[x[1]]+2*evals[x[2]]+4*evals[x[3]]+evals[x[4]])/12.0*(b-a)
+        myerr=np.abs(f2-f1)
+        if (myerr<tol):
+            return (16.0*f2-f1)/15.0,myerr,len(evals)
+        else:
+            mid=0.5*(b+a)
+            f_left,err_left,trash=simple_integrate_efficient(fun,a,mid,tol/2.0)
+            f_right,err_right,trash2=simple_integrate_efficient(fun,mid,b,tol/2.0)
+            f=f_left+f_right
+            err=err_left+err_right
+            return f,err,len(evals)
+        
+    def simple_integrate(fun,a,b,tol):
+        x=np.linspace(a,b,5)
+        y=fun(x)
+        neval=len(x) #let's keep track of function evaluations
+        f1=(y[0]+4*y[2]+y[4])/6.0*(b-a)
+        f2=(y[0]+4*y[1]+2*y[2]+4*y[3]+y[4])/12.0*(b-a)
+        myerr=np.abs(f2-f1)
+        if (myerr<tol):
+            return (16.0*f2-f1)/15.0,myerr,neval
+        else:
+            mid=0.5*(b+a)
+            f_left,err_left,neval_left=simple_integrate(fun,a,mid,tol/2.0)
+            f_right,err_right,neval_right=simple_integrate(fun,mid,b,tol/2.0)
+            neval=neval+neval_left+neval_right
+            f=f_left+f_right
+            err=err_left+err_right
+            return f,err,neval
+
+    ineff_f, ineff_err, ineff_neval = simple_integrate(fun,a,b,tol)
+    eff_f, eff_err, eff_neval = simple_integrate_efficient(fun,a,b,tol)
+    print("Saved Function Calls: " +str(ineff_neval - eff_neval))
+
+
 
 
 def problem4():
     def messyboi(theta,z,R):
-        
-        
-    
+        print("hi")
+        print("hey")
 
 
 
 
-def simple_integrate(fun,a,b,tol):
-    x=np.linspace(a,b,5)
-    #np.median(np.diff(x))
-    y=fun(x)
-    neval=len(x) #let's keep track of function evaluations
-    f1=(y[0]+4*y[2]+y[4])/6.0*(b-a)
-    f2=(y[0]+4*y[1]+2*y[2]+4*y[3]+y[4])/12.0*(b-a)
-    myerr=np.abs(f2-f1)
-    print([a,b,f1,f2])
-    if (myerr<tol):
-        #return (f2)/1.0,myerr,neval
-        return (16.0*f2-f1)/15.0,myerr,neval
-    else:
-        mid=0.5*(b+a)
-        f_left,err_left,neval_left=simple_integrate(fun,a,mid,tol/2.0)
-        f_right,err_right,neval_right=simple_integrate(fun,mid,b,tol/2.0)
-        neval=neval+neval_left+neval_right
-        f=f_left+f_right
-        err=err_left+err_right
-        return f,err,neval
 
 
-        
+
+
+
+
