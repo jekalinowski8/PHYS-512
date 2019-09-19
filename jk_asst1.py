@@ -2,7 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+import scipy as sp
 
 #Question 1: 
 #a)
@@ -49,6 +49,7 @@ def problem1(numh = 1000, x=1):
     def expo(x): 
         return np.exp(x*.01)
     plt.close()
+    #Take values of h from 10^-16 to 1
     hs = np.logspace(-16,1,num=numh)
     errs1 = np.abs(np.exp(x)-(-np.exp(x+2*hs)+8*np.exp(x+hs)+np.exp(x-2*hs)-8*np.exp(x-hs))/(12*hs))
     plt.plot(np.log10(hs), np.log10(errs1), label='exp(x)')
@@ -96,22 +97,20 @@ def problem2(T, graph=False):
         plt.scatter(temps, vs, color='b', label='Data')
         plt.scatter(T,v,color='r',marker='x', label='Input')
         plt.plot(ts,interp, color='k', label='Interpolated Curve')
-        plt.errorbar(ts,interp,yerr=errs)
         plt.legend()
     if (not graph):
         print("(Voltage, Error Estimate)=")
     return v[0],err
                 
     
+
     
     
-    
-    
-def problem3(fun, a, b, tol):
+def problem3(fun, a, b, tol=.001):
     if ('evals' in globals()):
         global evals
         del evals
-    def simple_integrate_efficient(fun, a, b, tol):
+    def simple_integrate_efficient(fun, a, b, tol=.001):
         if not('evals' in globals()):
             global evals 
             evals = {}
@@ -124,18 +123,19 @@ def problem3(fun, a, b, tol):
         myerr=np.abs(f2-f1)
         if (myerr<tol):
             return (16.0*f2-f1)/15.0,myerr,len(evals)
-        else:
+        else:   
             mid=0.5*(b+a)
             f_left,err_left,trash=simple_integrate_efficient(fun,a,mid,tol/2.0)
             f_right,err_right,trash2=simple_integrate_efficient(fun,mid,b,tol/2.0)
             f=f_left+f_right
             err=err_left+err_right
             return f,err,len(evals)
-        
+    
+    
     def simple_integrate(fun,a,b,tol):
         x=np.linspace(a,b,5)
         y=fun(x)
-        neval=len(x) #let's keep track of function evaluations
+        neval=len(x) 
         f1=(y[0]+4*y[2]+y[4])/6.0*(b-a)
         f2=(y[0]+4*y[1]+2*y[2]+4*y[3]+y[4])/12.0*(b-a)
         myerr=np.abs(f2-f1)
@@ -152,16 +152,26 @@ def problem3(fun, a, b, tol):
 
     ineff_f, ineff_err, ineff_neval = simple_integrate(fun,a,b,tol)
     eff_f, eff_err, eff_neval = simple_integrate_efficient(fun,a,b,tol)
-    print("Saved Function Calls: " +str(ineff_neval - eff_neval))
+
+    return eff_f,"Saved Function Calls: " +str(ineff_neval - eff_neval)
 
 
 
 
 def problem4():
-    def messyboi(theta,z,R):
-        print("hi")
-        print("hey")
-
+    def messyboi(u,z,R):
+        num = z-R*u
+        denom = 1+z**2-2*z*u
+        return num/(denom)**(3/2)
+    zs = np.linspace(0,5,num=100)
+    for z in zs: 
+        my,garbage = problem3(lambda x: messyboi(x,z,1),-1,1)
+        plt.scatter(z,my,marker='o',color='k',label='My Integrator')
+        quad, trash= sp.integrate.quad(lambda y: messyboi(y,z,1),-1,1)
+        plt.scatter(z,quad,marker='x',color='r',label='Quad')
+        
+    
+        
 
 
 
