@@ -117,11 +117,9 @@ def problem2(T, graph=False, npts=10000):
         ts = np.linspace(1.40,499,num=10000)
         np.append(ts,temps)
         interp = []
-        errs = []
         for t in ts: 
-            val, err = problem2(t)
+            val, _ = problem2(t)
             interp.append(val)
-            errs.append(err)
         plt.scatter(temps, vs, color='b', label='Data')
         plt.scatter(T,v,color='r',marker='x', label='Input')
         plt.plot(ts,interp, color='k', label='Interpolated Curve')
@@ -151,7 +149,7 @@ e^(-x^2)  \    0    \     42    \     342     \
 -----------------------------------------------      
 
 
-Run problem3(fun,a,b) and see how many function evaluations my rewrite of the
+Run problem3(fun,a,b) and see how many function evaluations the rewrite of the
 integrator saved. Error tolerance is 0.001 by default but can be adjusted as 
 well. 
 
@@ -182,8 +180,8 @@ def problem3(fun, a, b, tol=.001):
             return (16.0*f2-f1)/15.0,myerr,len(evals)
         else:   
             mid=0.5*(b+a)
-            f_left,err_left,trash=simple_integrate_efficient(fun,a,mid,tol/2.0)
-            f_right,err_right,trash2=simple_integrate_efficient(fun,mid,b,tol/2.0)
+            f_left,err_left,_=simple_integrate_efficient(fun,a,mid,tol/2.0)
+            f_right,err_right,_=simple_integrate_efficient(fun,mid,b,tol/2.0)
             f=f_left+f_right
             err=err_left+err_right
             return f,err,len(evals)
@@ -234,9 +232,9 @@ def problem4():
     quads = []
     for z in zs:
         #Do the integrals w/ my integrator and quad, plot
-        my,garbage = problem3(lambda x: messyboi(x,z,1),-1,1)
+        my,_= problem3(lambda x: messyboi(x,z,1),-1,1)
         mys.append(my)
-        quad, trash= integrate.quad(lambda y: messyboi(y,z,1),-1,1)
+        quad,_= integrate.quad(lambda y: messyboi(y,z,1),-1,1)
         quads.append(quad)
     plt.scatter(zs,mys,marker='o',color='k',label='My Integrator')
     plt.scatter(zs,quads,marker='x',color='r',label='Quad')
