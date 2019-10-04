@@ -1,0 +1,15 @@
+Jonathan Kalinowski - PHYS 512 - Asst 2
+
+Question 1:
+
+a)Code in contained in question1(). question1(x) will return log2(x) as estimated by the Chebyshev fit. question1(plot=True) will show the cheb and poly fits and their residuals. question1(showErr=True) shows the maximum and rms errors of both fit types. 
+
+A sixth order Chebyshev fit (7 terms) are needed for guaranteed accuracy better than 10^-6.
+
+Here are the error comparisons in a chebfit vs polyfit:
+Max Cheb Err: 7.88869960355e-07
+Max Poly Err: 4.95546897916e-06
+RMS Cheb Err: 8.8258445572e-08
+RMS Poly Err: 5.85823788789e-07
+
+Asst
