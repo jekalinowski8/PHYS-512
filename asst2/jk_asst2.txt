@@ -14,4 +14,25 @@ RMS Poly Err: 5.85823788789e-07
 
 The polyfit errors are about an order of magnitude higher than the Chebyshev fit errors.
 
+
 Question 2: 
+
+a)
+I zoomed into the decay from points 3200-3230. 
+
+NOT a linear model. Model is y=e^(a(x-b))+c. 
+A decent starting guess is a=-25, b=1706.4, c=1. 
+
+b)
+
+Best fit parameters are a=-67.761867, b=1706.50321, c=1.00514935. 
+
+c)
+I'll estimate errors by (slightly) changing starting guess values and looking at the standard deviations in the resulting parameters: 
+
+After 10 runs, this gives an estimate of the error in a of 0.00434 and in c, 7.12e-8. b showed no change between the runs and thus cannot be estimated this way. I'll estimate the error in b as 5e-6, half of the most precise digit given for b. 
+
+I think these are reasonable ballpark erax1.plot(xvals,pyvals,label='Poly Fit',color='k')
+        ax1.plot(xvals,yvals,label='Cheb Fit',color='r')ror estimates for parameter errors. I tried perturbing the initial guess by a lot and the fit still settled down to similar values within my estimated parameter errors. However, there could be other minima of chi2 which are not accounted for in my fit; MCMC methods would be necessary to get a real estimate in fit parameters. 
+
+d) I do not trust the errors in part c for the full span of the data. I arbitrarily chose only 30 points to fit, but if I had chosen more/less the fit parameters will be quite different. I tried 40/50 points instead the parameters all deviated by orders of magnitude greater than my error estimates. There is also some oscillatory noise after the decay in the exponential, which will alter the fit parameters greatly depending on where in the oscillation I decide to truncate the data. 
