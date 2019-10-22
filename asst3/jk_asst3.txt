@@ -1,0 +1,5 @@
+Jonathan Kalinowski - PHYS 512 Asst 3 
+
+1) With the initial guess of the parameters, the chi2 value is 1588.2376458618871.
+
+2)
