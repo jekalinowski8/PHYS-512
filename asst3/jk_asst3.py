@@ -2,8 +2,10 @@
 import numpy as np
 import camb
 from matplotlib import pyplot as plt
+import time as t
 
 plt.close()
+
 def get_spectrum(pars,lmax=2000,tau_fixed=False):
     if (tau_fixed):
         H0,ombh2,omch2,As,ns=pars
@@ -49,7 +51,7 @@ lam=1
 noise = np.diag(wmap[:,2])
 noiseinv = np.linalg.inv(noise**2)
 fix_od=False
-do_newton = False
+do_newton = True
 if not 'cov' in locals() and do_newton: 
     if (fix_od):
          pars = [pars[0],pars[1],pars[2],pars[4],pars[5]]
@@ -101,23 +103,27 @@ if not 'cov' in locals() and do_newton:
 print("Finished Gauss-Newton. Params are "+str(pars))
 cmb = get_spectrum(pars,tau_fixed=fix_od)
 chi2=sum(np.array(((cmb-wmap[:,1])/(wmap[:,2])))**2)
-cov =np.dot(np.dot(grad,noiseinv),grad.transpose())
+try:
+    cov =np.dot(np.dot(grad,noiseinv),grad.transpose())
+except: 
+    pass
+
 
 def take_step():
     return np.asarray([10,0.01,0.1,0.01,1e-9,.01])*np.random.randn(6)
 def take_step_cov(covmat):
     mychol=np.linalg.cholesky(covmat)
     return np.dot(mychol,np.random.randn(covmat.shape[0]))
-
-#don't evaulate camb if tau goes negative
-nstep=1000
+doMCMC=False
+now = t.time()
+nstep=10000
 npar=len(pars)
-chains_new=np.zeros([nstep,npar])
-scale_fac=1
-chisqvec_new=np.zeros(nstep)
+chains=np.zeros([nstep,npar+1])
+scale_fac=.018
 num_accept=0
-for i in range(nstep):
-    if (fix_od):
+print("Starting MCMC")
+for i in range(1,nstep+1):
+    if (fix_od or not doMCMC):
         break
     new_pars=pars+take_step()*scale_fac
     if (new_pars[3]<=0):
@@ -135,19 +141,20 @@ for i in range(nstep):
     prob=np.exp(-0.5*delta_chisq)
     accept=np.random.rand(1)<prob
     if accept:
-        print("step accepted")
+        
         num_accept=num_accept+1
         pars=new_pars
         cmb=new_cmb
         chi2=new_chi2
-    chains_new[i,:]=pars
-    chisqvec_new[i]=chi2
-    print("Accepted ratio: "+str(num_accept/(i+1)))
+    chains[i,:]=np.append(pars,chi2)
+    if (i%100==0):
+        elapsed = t.time()
+        print("Iteration Number: " + str(i)+ " ; Elapsed Time: " + str(elapsed-now) + " s")
+        now = t.time()
+        np.savetxt("chains3.csv",chains,delimiter=',')
+        print("Accepted ratio: "+str(num_accept/(i+1)))
     
-fit_params=np.mean(chains_new,axis=0)
 
 
 
-
-plt.ion()
 
