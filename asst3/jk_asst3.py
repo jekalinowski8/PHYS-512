@@ -33,7 +33,7 @@ def cal_deriv(pars,fn,lendata,tau_fixed):
         num = fn(np.add(pars,dpars1),tau_fixed=tau_fixed)-fn(np.add(pars,dpars2),tau_fixed=tau_fixed)
         den = 2*h
         deriv[i]=num/den
-    return np.array(deriv)
+    return np.matrix(deriv).transpose()
 
 #plt.ion()
 
@@ -48,24 +48,26 @@ cmb=get_spectrum(pars)
 
 niter=10
 lam=1
-noise = np.diag(wmap[:,2])
-noiseinv = np.linalg.inv(noise**2)
+noiseinv = np.linalg.inv(np.diag(wmap[:,2])**2)
 fix_od=False
-do_newton = True
-if not 'cov' in locals() and do_newton: 
+do_newton = False
+if do_newton: 
+    print('Running Newton w/ Levenberg–Marquardt. Chi2 values are:')
     if (fix_od):
          pars = [pars[0],pars[1],pars[2],pars[4],pars[5]]
          cmb = get_spectrum(pars,tau_fixed=True)
          dchi2 = 999
          while (dchi2>0.000001):
-            grad = cal_deriv(pars,get_spectrum,len(wmap[:,0]),True)
-            curve = np.dot(np.dot(grad,noiseinv),grad.transpose())
-            lhs = np.add(curve,lam*np.diag(curve))
-            resid = wmap[:,1]-cmb
-            rhs = np.dot(np.dot(grad,noiseinv),resid)
+            A = cal_deriv(pars,get_spectrum,len(wmap[:,0]),True)
+            cov = np.dot(np.dot(A.transpose(),noiseinv),A)
+            lhs = np.add(cov,lam*np.diag(cov))
+            resid = np.matrix((wmap[:,1]-cmb))
+            resid = resid.reshape(-1, 1)
+            rhs = np.dot(np.dot(A.transpose(),noiseinv),resid)
             dp = np.dot(np.linalg.inv(lhs),rhs)
             chi2=sum(np.array(((cmb-wmap[:,1])/(wmap[:,2])))**2)
-            pars = np.add(pars,dp)
+            pars = np.add(pars,dp.transpose())
+            pars = pars.ravel()
             newcmb = get_spectrum(pars,tau_fixed=True)
             chi2new = sum(np.array(((newcmb-wmap[:,1])/(wmap[:,2])))**2)
             print(chi2new)
@@ -81,14 +83,16 @@ if not 'cov' in locals() and do_newton:
         cmb = get_spectrum(pars)
         dchi2 = 999
         while (dchi2>0.000001):
-            grad = cal_deriv(pars,get_spectrum,len(wmap[:,0]),False)
-            curve = np.dot(np.dot(grad,noiseinv),grad.transpose())
-            lhs = np.add(curve,lam*np.diag(curve))
+            A = cal_deriv(pars,get_spectrum,len(wmap[:,0]),False)
+            cov = np.dot(np.dot(A.transpose(),noiseinv),A)
+            lhs = np.add(cov,lam*np.diag(cov))
             resid = wmap[:,1]-cmb
-            rhs = np.dot(np.dot(grad,noiseinv),resid)
-            dp = np.dot(np.linalg.inv(lhs),rhs)
+            resid = resid.reshape(-1, 1)
+            rhs = np.dot(np.dot(A.transpose(),noiseinv),resid)
+            dp = np.array(np.dot(np.linalg.inv(lhs),rhs))
             chi2=sum(np.array(((cmb-wmap[:,1])/(wmap[:,2])))**2)
-            pars = np.add(pars,dp)
+            pars = np.add(pars,dp.transpose())
+            pars = pars.ravel()
             newcmb = get_spectrum(pars)
             chi2new = sum(np.array(((newcmb-wmap[:,1])/(wmap[:,2])))**2)
             print(chi2new)
@@ -99,60 +103,60 @@ if not 'cov' in locals() and do_newton:
             dchi2 = abs((chi2new-chi2)/chi2new)
             chi2=chi2new
             cmb = newcmb
+    newton_pars = pars
             
 print("Finished Gauss-Newton. Params are "+str(pars))
 cmb = get_spectrum(pars,tau_fixed=fix_od)
 chi2=sum(np.array(((cmb-wmap[:,1])/(wmap[:,2])))**2)
 try:
-    cov =np.dot(np.dot(grad,noiseinv),grad.transpose())
+    cov = np.linalg.inv(np.dot(np.dot(A.transpose(),noiseinv),A))
+    print('Parameter Errors are ' + str(np.sqrt(np.diag((cov)))))
 except: 
     pass
+
 
 
 def take_step():
     return np.asarray([10,0.01,0.1,0.01,1e-9,.01])*np.random.randn(6)
 def take_step_cov(covmat):
     mychol=np.linalg.cholesky(covmat)
-    return np.dot(mychol,np.random.randn(covmat.shape[0]))
-doMCMC=False
+    return np.ravel(np.dot(mychol,np.random.randn(covmat.shape[0])))
+doMCMC=True
 now = t.time()
 nstep=10000
 npar=len(pars)
 chains=np.zeros([nstep,npar+1])
-scale_fac=.018
+scale_fac=.24
 num_accept=0
 print("Starting MCMC")
-for i in range(1,nstep+1):
+i=0
+while(i<nstep):
     if (fix_od or not doMCMC):
         break
-    new_pars=pars+take_step()*scale_fac
+    new_pars=pars+take_step_cov(cov)*scale_fac
     if (new_pars[3]<=0):
-        i=i-1
-        print("optical depth negative")
         continue
     try: 
         new_cmb=get_spectrum(new_pars)
-    except: 
-        print("camb err")
-        i=i-1
+    except CAMBError: 
         continue
     new_chi2=np.sum( (wmap[:,1]-new_cmb)**2/wmap[:,2]**2)
     delta_chisq=new_chi2-chi2
     prob=np.exp(-0.5*delta_chisq)
     accept=np.random.rand(1)<prob
     if accept:
-        
         num_accept=num_accept+1
         pars=new_pars
         cmb=new_cmb
         chi2=new_chi2
     chains[i,:]=np.append(pars,chi2)
-    if (i%100==0):
+    if (i%10==0 and i!=0):
         elapsed = t.time()
         print("Iteration Number: " + str(i)+ " ; Elapsed Time: " + str(elapsed-now) + " s")
         now = t.time()
         np.savetxt("chains3.csv",chains,delimiter=',')
         print("Accepted ratio: "+str(num_accept/(i+1)))
+    i=i+1
     
 
 
