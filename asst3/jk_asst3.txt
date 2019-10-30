@@ -2,4 +2,6 @@ Jonathan Kalinowski - PHYS 512 Asst 3
 
 1) With the initial guess of the parameters, the chi2 value is 1588.2376458618871.
 
-2)
+2) When Newton's method is run the chi2 drops to within 1 of its final value after the first iteration, suggesting that the derivative estimate is accurate enough for gradient descent. 
+
+3)
