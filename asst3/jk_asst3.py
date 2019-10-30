@@ -6,6 +6,7 @@ import time as t
 
 plt.close()
 
+#calculate the power spectrum
 def get_spectrum(pars,lmax=2000,tau_fixed=False):
     if (tau_fixed):
         H0,ombh2,omch2,As,ns=pars
@@ -22,6 +23,7 @@ def get_spectrum(pars,lmax=2000,tau_fixed=False):
     tt=cmb[2:1201,0]    #you could return the full power spectrum here if you wanted to do say EE
     return tt
 
+#calculate the derivative of the power spectrum
 def cal_deriv(pars,fn,lendata,tau_fixed):
     deriv = np.zeros((len(pars),lendata))
     for i in range((len(pars))):
@@ -35,22 +37,24 @@ def cal_deriv(pars,fn,lendata,tau_fixed):
         deriv[i]=num/den
     return np.matrix(deriv).transpose()
 
-#plt.ion()
-
+#default parameters & data
 pars=np.asarray([65,0.02,0.1,0.05,2e-9,0.96])
 wmap=np.loadtxt('wmap_tt_spectrum_9yr_v5.txt')
 cmb=get_spectrum(pars)
+
+#plot and calculate chi2: 
 #plt.plot(cmb,zorder=10,color='r')
 #plt.errorbar(wmap[:,0],wmap[:,1],wmap[:,2],fmt='*',color='k',zorder=5)
 #plt.plot(wmap[:,0],wmap[:,1],'.',color='k',zorder=0)
 #chi2=sum(np.array(((cmb-wmap[:,1])/(wmap[:,2])))**2)
 
-
+#Newton's method w/ Levenberg-Marquardt
 niter=10
 lam=1
 noiseinv = np.linalg.inv(np.diag(wmap[:,2])**2)
-fix_od=False
-do_newton = False
+fix_od=True
+do_newton = True
+
 if do_newton: 
     print('Running Newton w/ Levenberg–Marquardt. Chi2 values are:')
     if (fix_od):
@@ -67,7 +71,7 @@ if do_newton:
             dp = np.dot(np.linalg.inv(lhs),rhs)
             chi2=sum(np.array(((cmb-wmap[:,1])/(wmap[:,2])))**2)
             pars = np.add(pars,dp.transpose())
-            pars = pars.ravel()
+            pars = np.ravel(np.asarray(pars.ravel()))
             newcmb = get_spectrum(pars,tau_fixed=True)
             chi2new = sum(np.array(((newcmb-wmap[:,1])/(wmap[:,2])))**2)
             print(chi2new)
@@ -115,9 +119,8 @@ except:
     pass
 
 
-
-def take_step():
-    return np.asarray([10,0.01,0.1,0.01,1e-9,.01])*np.random.randn(6)
+#MCMC
+    
 def take_step_cov(covmat):
     mychol=np.linalg.cholesky(covmat)
     return np.ravel(np.dot(mychol,np.random.randn(covmat.shape[0])))

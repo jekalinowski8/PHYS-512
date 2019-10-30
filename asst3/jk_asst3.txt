@@ -4,4 +4,20 @@ Jonathan Kalinowski - PHYS 512 Asst 3
 
 2) When Newton's method is run the chi2 drops to within 1 of its final value after the first iteration, suggesting that the derivative estimate is accurate enough for gradient descent. 
 
+With optical depth fixed, Newton's method finds parameters: 
+H0 =  74 +/- 3
+ω_bh^2 = 0.0231 +/- 0.0006
+ω_ch^2 = 0.106 +/- 0.005
+A_s = (2.00+/-0.04)*10^-9
+Primordial power law slope = 0.99+/- 0.01
+
+Without optical depth fixed, 
+
+H0 =  70 +/-3
+ω_bh^2 = 0.0224 +/- 0.0008
+ω_ch^2 = 0.114 +/- 0.007
+τ = 0.0401 +/- 0.1480
+A_s = (2.00+/-0.06)*10^-9
+Primordial power law slope = 0.97+/-0.02
+
 3)
