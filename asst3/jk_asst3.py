@@ -52,8 +52,8 @@ cmb=get_spectrum(pars)
 niter=10
 lam=1
 noiseinv = np.linalg.inv(np.diag(wmap[:,2])**2)
-fix_od=True
-do_newton = True
+fix_od=False
+do_newton = False
 
 if do_newton: 
     print('Running Newton w/ Levenberg–Marquardt. Chi2 values are:')
@@ -129,14 +129,18 @@ now = t.time()
 nstep=10000
 npar=len(pars)
 chains=np.zeros([nstep,npar+1])
-scale_fac=.24
+scale_fac=1.2 #best scale factor floated tau
 num_accept=0
+chains_old = np.loadtxt('chains_old.csv',delimiter=',')
+chains_old = chains_old[1000:9000,0:6]
+cov = np.cov(chains_old[int(nstep/2):9000,:].T)
 print("Starting MCMC")
 i=0
 while(i<nstep):
     if (fix_od or not doMCMC):
         break
     new_pars=pars+take_step_cov(cov)*scale_fac
+    #new_pars[3]=0.0544
     if (new_pars[3]<=0):
         continue
     try: 
@@ -153,11 +157,11 @@ while(i<nstep):
         cmb=new_cmb
         chi2=new_chi2
     chains[i,:]=np.append(pars,chi2)
-    if (i%10==0 and i!=0):
+    if (i%5==0 and i!=0):
         elapsed = t.time()
         print("Iteration Number: " + str(i)+ " ; Elapsed Time: " + str(elapsed-now) + " s")
         now = t.time()
-        np.savetxt("chains3.csv",chains,delimiter=',')
+        np.savetxt("chains7.csv",chains,delimiter=',')
         print("Accepted ratio: "+str(num_accept/(i+1)))
     i=i+1
     

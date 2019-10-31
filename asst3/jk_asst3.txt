@@ -11,6 +11,8 @@ H0 =  74 +/- 3
 A_s = (2.00+/-0.04)*10^-9
 Primordial power law slope = 0.99+/- 0.01
 
+chi2 = 1230.86
+
 Without optical depth fixed, 
 
 H0 =  70 +/-3
@@ -19,5 +21,7 @@ H0 =  70 +/-3
 τ = 0.0401 +/- 0.1480
 A_s = (2.00+/-0.06)*10^-9
 Primordial power law slope = 0.97+/-0.02
+
+chi2= 1227.93
 
 3)
