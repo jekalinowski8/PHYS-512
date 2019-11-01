@@ -24,7 +24,7 @@ Primordial power law slope = 0.97+/-0.02
 
 chi2= 1227.93
 
-3) After about a week and a half, I still couldn't get any chains to converge. My best-converged chain gives the following parameters
+3) After about a week and a half, I still couldn't get any chains to converge. I also found better results from using the covariances of my prior chains for the covariance matrix, rather than the one from Newton's method. My best-converged chain gives the following parameters: 
 
 H0 =  77 +/-4
 ω_bh^2 = 0.0024 +/- 0.0009
@@ -33,9 +33,9 @@ H0 =  77 +/-4
 A_s = (2.80+/-0.04)*10^-9
 Primordial power law slope = 1.03+/-0.03
 
-I've included plots of the parameters in the folder 'Graphs_TauFloating'. They don't quite look like 
+I've included plots of the parameters in the folder 'Graphs_TauFloating'. They don't look enough like white noise to suggest any convergence. 
 
-4)
+4) I'm running chains for fixed tau over the weekend, will have final results on Monday! 
 
 
 
