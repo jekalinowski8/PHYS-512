@@ -24,4 +24,16 @@ Primordial power law slope = 0.97+/-0.02
 
 chi2= 1227.93
 
-3)
+3) After about a week and a half, I still couldn't get any chains to converge. My best-converged chain gives the following parameters
+
+H0 =  77 +/-4
+ω_bh^2 = 0.0024 +/- 0.0009
+ω_ch^2 = 0.102 +/- 0.006
+τ = 0.21 +/- 0.08
+A_s = (2.80+/-0.04)*10^-9
+Primordial power law slope = 1.03+/-0.03
+
+4)
+
+
+
