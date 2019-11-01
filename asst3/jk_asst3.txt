@@ -33,6 +33,8 @@ H0 =  77 +/-4
 A_s = (2.80+/-0.04)*10^-9
 Primordial power law slope = 1.03+/-0.03
 
+I've included plots of the parameters in the folder 'Graphs_TauFloating'. They don't quite look like 
+
 4)
 
 
