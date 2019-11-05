@@ -24,18 +24,35 @@ Primordial power law slope = 0.97+/-0.02
 
 chi2= 1227.93
 
-3) After about a week and a half, I still couldn't get any chains to converge. I also found better results from using the covariances of my prior chains for the covariance matrix, rather than the one from Newton's method. My best-converged chain gives the following parameters: 
+3) After about a week and a half, I still couldn't get any chains to converge. I also found better results from using the covariances of my prior chains for the covariance matrix, rather than the one from Newton's method. 
+
+One chain gives the following parameters: 
 
 H0 =  77 +/-4
 ω_bh^2 = 0.0024 +/- 0.0009
 ω_ch^2 = 0.102 +/- 0.006
-τ = 0.21 +/- 0.08
+τ = 0.21 +/- 0.08 
 A_s = (2.80+/-0.04)*10^-9
 Primordial power law slope = 1.03+/-0.03
 
-I've included plots of the parameters in the folder 'Graphs_TauFloating'. They don't look enough like white noise to suggest any convergence. 
+I've included plots of the parameters in the folder 'Plots_TauFloating'. 
 
-4) I'm running chains for fixed tau over the weekend, will have final results on Monday! 
+4) My chains with a prior for tau converged! I included plots of each parameter and their power spectra, which correspond to white noise, in the folder 'Plots_TauFixed'. The final parameter values are:
 
+H0 =  69.46 +/- 2
+ω_bh^2 = 0.0225 +/- 0.0005
+ω_ch^2 = 0.114 +/- 0.005
+A_s = (2.06 +/- 0.04)*10^-9
+Primordial power law slope = 0.97 +/- 0.01
+
+When I take a weighted average over my old chain using a normally distributed tau w/ mean 0.0544 and std 0.0073 I get parameters: 
+
+H0 =  69.13
+ω_bh^2 = 0.0245 
+ω_ch^2 = 0.114
+A_s = 2.06*10^-9
+Primordial power law slope = 0.97
+
+H0 is within a standard deviation, ω_bh^2 is 4 standard deviations away, and the rest match. That's pretty good considering the chain I averaged wasn't even converged. 
 
 

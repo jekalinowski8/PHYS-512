@@ -96,6 +96,7 @@ if do_newton:
             dp = np.array(np.dot(np.linalg.inv(lhs),rhs))
             chi2=sum(np.array(((cmb-wmap[:,1])/(wmap[:,2])))**2)
             pars = np.add(pars,dp.transpose())       
+            newcmb = get_spectrum(pars,tau_fixed=True)
             new_chi2=np.sum( (wmap[:,1]-new_cmb)**2/wmap[:,2]**2)
             pars = pars.ravel()
             newcmb = get_spectrum(pars)
@@ -108,9 +109,8 @@ if do_newton:
             dchi2 = abs((chi2new-chi2)/chi2new)
             chi2=chi2new
             cmb = newcmb
-    newton_pars = pars
-           
-print("Finished Gauss-Newton. Params are "+str(pars))
+    print("Finished Gauss-Newton. Params are "+str(pars))
+    
 cmb = get_spectrum(pars,tau_fixed=fix_od)
 chi2=sum(np.array(((cmb-wmap[:,1])/(wmap[:,2])))**2)
 try:
@@ -149,38 +149,9 @@ if(not fix_od):
             continue
         try:        
             new_cmb=get_spectrum(new_pars)
-        except CAMBError:
-            continue
-        new_chi2=np.sum( (wmap[:,1]-new_cmb)**2/wmap[:,2]**2)
-        delta_chisq=new_chi2-chi2
-        prob=np.exp(-0.5*delta_chisq)
-        accept=np.random.rand(1)<probtake_step_cov(cov)
-        if accept:
-            num_accept=num_accept+1
-            pars=new_pars
-            cmb=new_cmb
-            chi2=new_chi2
-        chains[i,:]=np.append(pars,chi2)
-        if (i%5==0 and i!=0):
-            elapsed = t.time()
-            print("Iteration Number: " + str(i)+ " ; Elapsed Time: " + str(elapsed-now) + " s")
-            now = t.time()
-            np.savetxt("chains8.csv",chains,delimiter=',')
-            print("Accepted ratio: "+str(num_accept/(i+1)))
-        i=i+1
-else:
-    scale_fac = .008
-    print("Starting MCMC: Tau Fixed")
-    cov = np.delete(cov,3,axis=0)
-    cov = np.delete(cov,3,axis=1)
-    pars = np.asarray([74,0.0231,0.106,2e-9,0.99])
-    chains=np.zeros([nstep,npar])
-    while(i<nstep):
-        #new_pars=pars+take_step_cov(cov)*scale_fac
-        new_pars=pars+take_step()*scale_fac
-        try:
-            new_cmb=get_spectrum(new_pars,tau_fixed=True)
-        except CAMBError:
+        except KeyboardInterrupt:
+            break
+        except: 
             continue
         new_chi2=np.sum( (wmap[:,1]-new_cmb)**2/wmap[:,2]**2)
         delta_chisq=new_chi2-chi2
@@ -196,8 +167,46 @@ else:
             elapsed = t.time()
             print("Iteration Number: " + str(i)+ " ; Elapsed Time: " + str(elapsed-now) + " s")
             now = t.time()
-            np.savetxt("chains1_tau.csv",chains,delimiter=',')
+            np.savetxt("chains8.csv",chains,delimiter=',')
             print("Accepted ratio: "+str(num_accept/(i+1)))
+        i=i+1
+else:
+    scale_fac = 1
+    print("Starting MCMC: Tau Fixed")
+    chains_old = np.loadtxt('chains_old_tau.csv',delimiter=',')
+    chains_old = chains_old[1000:3800,0:5]
+    cov = np.cov(chains_old.T)
+    pars = np.mean(chains_old,axis=0)
+    chains=np.zeros([nstep,npar])
+    while(i<nstep):
+        
+        new_pars=pars+take_step_cov(cov)*scale_fac
+        try:
+            new_cmb=get_spectrum(new_pars,tau_fixed=True)
+        except KeyboardInterrupt:
+            break
+        except: 
+            print("Camb Err")
+            continue
+        new_chi2=np.sum( (wmap[:,1]-new_cmb)**2/wmap[:,2]**2)
+        delta_chisq=new_chi2-chi2
+        prob=np.exp(-0.5*delta_chisq)
+        accept=np.random.rand(1)<prob
+        if accept:
+            num_accept=num_accept+1
+            pars=new_pars
+            cmb=new_cmb
+            chi2=new_chi2
+        chains[i,:]=np.append(pars,chi2)
+        if (i%5==0 and i!=0):
+            elapsed = t.time()
+            print("Iteration Number: " + str(i)+ " ; Elapsed Time: " + str(elapsed-now) + " s")
+            now = t.time()
+            np.savetxt("chains2_tau.csv",chains,delimiter=',')
+            print("Accepted ratio: "+str(num_accept/(i+1)))
+        if (i%100 and i!=0):
+            plt.clf()
+            plt.plot(chains[:,0])
         i=i+1
    
    
