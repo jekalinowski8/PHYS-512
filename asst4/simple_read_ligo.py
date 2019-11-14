@@ -1,7 +1,7 @@
-import numpy
+
 from matplotlib import pyplot as plt
 import h5py
-import glob
+
 
 plt.ion()
 
@@ -13,11 +13,9 @@ def read_template(filename):
     return th,tl
 def read_file(filename):
     dataFile=h5py.File(filename,'r')
-    dqInfo = dataFile['quality']['simple']
-    qmask=dqInfo['DQmask'][...]
+
 
     meta=dataFile['meta']
-    gpsStart=meta['GPSstart'][()]
     #print meta.keys()
     utc=meta['UTCstart'][()]
     duration=meta['Duration'][()]

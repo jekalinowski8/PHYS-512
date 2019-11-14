@@ -1,0 +1,12 @@
+Jonathan Kalinowski - PHYS 512 Asst 4
+
+a) I window the data using a Hanning window. I then FT the data and find the power spectrum. I smooth the power spectrum by convolving the power spectrum with a Gaussian w/ standard deviation of 5 points (scipy.ndimage.gaussian_filter1d(np.real(power),a)). Finally, I set the power spectrum at frequencies below 30 and above 1700 to 0, which are the regions where the log of the power spectrum is not approximately flat. The resulting power spectrum now resembles white noise much more closely.
+
+b)/c) Running the file will matched filter the data for the four sets of events, and will print out the SNRs for each event. I've included plots of the analytic SNR as a function of offset time in the folder 'SNR_Plots'. The SNRs that print are the maximum analytic value (multiplying the matched filter by the by the square root of <(N^(-1/2)A)^T*(N^(-1/2)A)> = σ_m) and the observed value (taking the max of the SNR as a function of offset time and dividing by the standard deviation of the SNR). I also estimated the combined SNR for both Livingston and Hanford by adding them in quadrature. 
+
+d) The analytic and observed are only close for a few event/detector combinations. They're generally not close, which implies that sqrt(<mm^T>) is not equal to the standard deviation we observed. I think it's because when we expanded <mm^T> and found it to be equal to <(N^(-1/2)A)^T*(N^(-1/2)A)>, we made an assumption that <dd^T>~N, which probably wasn't true for our data.
+
+e) Running the file will also print out the half-power frequencies for each event. 
+
+f) The arrival times can be localized to about +/- 0.02 s, the approximate width of the peaks in the SNR vs offset time graphs. The travel time is ~10^6 m/~10^8 m/s = ~10^-2 s.  The uncertainty in arrival time is on the order of the the travel time, meaning that the uncertainty in the event position would be on the order of the distance from the event to Earth. 
+
