@@ -2,10 +2,11 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-n = 500
-rcyl = 200
+n = 2000
+rcyl = 250
 V = 1
 
+#TODO: Convergence conditions
 def get_box(n,rcyl,V,plot=False):
     box = np.zeros((n,n))
     cylmask = np.zeros((n,n),dtype=bool)
@@ -66,20 +67,10 @@ def solve_relax(box,mask,plot=False):
  
 
 box, mask = get_box(n,rcyl,V)
-"""
-sbox = solve_relax(box,mask)
-abox = get_analytic_sol(n,rcyl,V)
-plt.plot(sbox[int(n/2),int(n/2):],label='solved')
-plt.plot(abox[int(n/2),int(n/2):],label='analytic')
-plt.legend()
-plt.figure()
-plt.plot(np.diag(sbox),label='solved')
-plt.plot(np.diag(abox),label='analytic')
-plt.legend()
-"""
 
 
-def solve_cgrad(box,mask,plot=False):
+#TODO: Masking
+def solve_cgrad(box,mask,plot=False,verbose=False):
     def Ax(V,mask):
         Vuse=V.copy()
         Vuse[mask]=0
@@ -93,10 +84,9 @@ def solve_cgrad(box,mask,plot=False):
     b=-(box[1:-1,0:-2]+box[1:-1,2:]+box[:-2,1:-1]+box[2:,1:-1])/4.0
     r=b-Ax(box,mask)
     p=r.copy()
-    for k in range(10*n):
+    for k in range(10):
         Ap=(Ax(pad(p),mask))
         rtr=np.sum(r*r)
-        #print('on iteration ' + repr(k) + ' residual is ' + repr(rtr))
         alpha=rtr/np.sum(Ap*p)
         box=box+pad(alpha*p)
         rnew=r-alpha*Ap
@@ -108,6 +98,31 @@ def solve_cgrad(box,mask,plot=False):
             plt.imshow(box)
             plt.colorbar()
             plt.pause(0.001)
+        if verbose:
+            print('on iteration ' + str(k))
     return box
 #rho=V[1:-1,1:-1]-(V[1:-1,0:-2]+V[1:-1,2:]+V[:-2,1:-1]+V[2:,1:-1])/4.0
 
+def solve_cgrad_hires(box,mask,rcyl,plot=False):
+    n = len(box)
+    if(n<500):
+        box = solve_cgrad(box,mask,plot=plot)
+        return box
+    else:     
+        #1 - solve at lower resolution (recursively)
+        #2 - interpolate up
+        #3 solve 
+        #solve at lower resolution
+        n_new = int(n/2)
+        r_new = int(rcyl/2)
+        V = box[n_new,n_new]
+        box_new, mask_new = get_box(n_new,r_new,V)
+        box_new = solve_cgrad_hires(box_new,mask_new,r_new,plot=plot)
+        hires_box,hires_mask = get_box(2*n_new,2*r_new,0)
+        for ix,iy in np.ndindex(box_new.shape):
+            hires_box[ix,iy]=box_new[ix,iy]
+            hires_box[ix+1,iy]=box_new[ix,iy]
+            hires_box[ix,iy+1]=box_new[ix,iy]
+            hires_box[ix+1,iy+1]=box_new[ix,iy]
+        return solve_cgrad(hires_box,hires_mask,plot=plot)
+        
