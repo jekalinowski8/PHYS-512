@@ -1,0 +1,19 @@
+1. I've attached plots of potential/charge density for a 64x64 box and wire w/ radius 16.
+
+I've also attached some plots of the relaxed potential compared to the analytic solution for a wire with no box, along the center and the diagonal of the box. They match fairly well for the former, but not as well for the latter; this makes sense, the analytic solution should match for r<n/2, where n is the box width, because of Gauss's law, but outside that area there's no analytic solution. 
+
+The solver took 1394 iterations and 0.061873 s total to solve. 
+
+My criterion for convergence was once the maximum change in potential stopped changing by more than 10e-6 everywhere between successive iterations.
+
+2. Under the same standard for convergence, the conjgrad solver takes only 106 iterations and  0.011549 seconds to solve. Wow, that's fast.
+
+3. I couldn't get this part to work; every time I tried to interpolate up, the potential near the wire blew up. I think it's a problem with my masking.
+
+4. I'll repeat with part 2) instead: I ran the conjgrad solver on the wire w/ a bump, took a numerical graident (np.gradient) of the potential, and plotted the magnitude of the gradient. Plot is attached. The magnitude of the electric field is 0.0308 near the bump and 0.0167 away from the bump, about 3 times as strong. 
+
+5. Going off the document, the heat equation (a diffusion equation) can just be reduced to an iterative solution like the relaxaiton method for potential above, but with each iteration representing a timestep. We can choose the diffusion constant to be dx^2/4*dt, which allows us to directly plug our problem into the relaxation solver like before. 
+
+As we can see from the plot, this choise of diffusion constant sets 1 regime, where the rate of heating of the side of the box is faster than the diffusion of heat, and the temperature of the right side of the box grows slowly. 
+
+If we were to increase the diffusion constant, we would expect our system to equillibriate faster than the temperature can rise, propagating out waves of temperature. But we also start running into problems with the CFL condition. I raised the diffusion rate and found a regime where the solution blew up, and attached a plot. 
