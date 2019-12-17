@@ -1,6 +1,5 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.signal import fftconvolve
 #TODO: 3D
 #TODO: Boundary conditions
 #TODO: Optimize
@@ -18,15 +17,15 @@ if ic == 'stationary':
 elif ic == 'orbit':
     n=2
     pos = np.array(([[0.5,0.5],[0.75,0.5]]))
-    vel = np.array(([[0,0],[0,2]]))   #63.24
-    m = np.array([1,.0001])
+    vel = np.array(([[0,0],[0,2.82842712475]]))   #63.24
+    m = np.array([2,.000001])
 elif ic == 'collapse':
     n=2
     pos = np.array(([[0.5,0.5],[0.75,0.5]]))
     vel = np.array(([[0,0],[0,1]]))
     m = np.array([1,1])
 else:
-    n=232
+    n=1000
     pos = np.random.rand(n,2)
     vel = (np.random.rand(n,2)*2-1)*0
     m = np.random.rand(n)
@@ -64,7 +63,7 @@ def cal_energy(x,v,m,epsilon=0.05):
      return T+V
      
 
-def cal_force_mesh(r,m,grid=100,eps=0.05,periodic=False):  
+def cal_force_mesh(r,m,grid=128,eps=0.05,periodic=False):  
     x = r[:,0]; y = r[:,1]
     if not periodic: 
         bgrid = 2*grid
@@ -77,7 +76,7 @@ def cal_force_mesh(r,m,grid=100,eps=0.05,periodic=False):
     density = density*(grid**2)
     xs = np.linspace(-bgrid//2,bgrid//2,num=bgrid+1)[:-1]
     r2 = np.tile(xs**2,(bgrid,1))
-    r = np.sqrt(r2+r2.transpose()+(grid)*eps**2) 
+    r = np.sqrt(r2+r2.transpose()+(grid*eps)**2) 
     pot = -G/r
     phi = np.real(np.fft.ifft2(np.fft.fft2(density)*np.fft.fft2(pot),s=(bgrid,bgrid)))
     phi = np.fft.fftshift(phi)
@@ -94,18 +93,15 @@ def cal_force_mesh(r,m,grid=100,eps=0.05,periodic=False):
     forces[:,0] = xgrad[digx,digy]
     forces[:,1] = ygrad[digx,digy]
     """
-    plt.figure(); plt.imshow(np.sqrt(xgrad**2)); plt.title("Forcex Magnitude"); plt.show()
-    plt.figure(); plt.imshow(np.sqrt(ygrad**2)); plt.title("Forcey Magnitude"); plt.show()
-    plt.figure(); plt.imshow(density); plt.title("Density"); plt.show() 
-    plt.figure(); plt.imshow(phi); plt.title("Potential Field"); plt.show()
-    plt.figure(); plt.imshow(pot); plt.title("Per-Particle Potential"); plt.show()
-    
-    assert 0
+    plt.figure(); plt.imshow(np.sqrt(xgrad**2)); plt.title("Forcex Magnitude");
+    plt.figure(); plt.imshow(np.sqrt(ygrad**2)); plt.title("Forcey Magnitude");
+    plt.figure(); plt.imshow(density); plt.title("Density"); 
+    plt.figure(); plt.imshow(phi); plt.title("Potential Field"); 
+    plt.figure(); plt.imshow(pot); plt.title("Per-Particle Potential"); 
    
-    print(forces)
     assert 0
     """
-    return forces
+    return forces*np.array([m,m]).transpose()
     
 
 def take_step_RK4(dt,pos,v,m,cal_fn=cal_force_mesh,periodic=False):   
@@ -150,13 +146,13 @@ def take_step_RK4(dt,pos,v,m,cal_fn=cal_force_mesh,periodic=False):
 
 if __name__ == '__main__':
     cal_fn = cal_force_mesh
-    T=1
+    T=2
     t=0
     dt=0.001
-    plot = 1
+    plot = 0
     i=0
-    xs = np.zeros((int(T/dt),n))
-    ys = np.zeros((int(T/dt),n))
+    xs = np.zeros((int(T/dt)+2,n))
+    ys = np.zeros((int(T/dt)+2,n))
     if plot:
         plt.clf()
         plt.scatter(pos[:,0],pos[:,1])
