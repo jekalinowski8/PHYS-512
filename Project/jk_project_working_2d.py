@@ -58,7 +58,7 @@ def cal_force(x,m,epsilon=0.05,pot=False): #calculate force between 2 particles
         return forces
 
 def cal_energy(x,v,m,epsilon=0.05):
-     T = np.sum(0.5*m*v[:,0]**2+v[:,1]**2)
+     T = np.sum(0.5*m*(v[:,0]**2+v[:,1]**2))
      V = cal_force(x,m,pot=True)
      return T+V
      
@@ -101,6 +101,7 @@ def cal_force_mesh(r,m,grid=128,eps=0.05,periodic=False):
    
     assert 0
     """
+   
     return forces*np.array([m,m]).transpose()
     
 
@@ -167,7 +168,7 @@ if __name__ == '__main__':
         x = pos[:,0]; y=pos[:,1]
         xx = np.logical_or(x<0,x>1)   
         yy = np.logical_or(y<0,y>1)    
-        a = np.logical_or(xx,yy)
+        a = np.logical_or(xx,yy)_mesh
         e = np.sum(a)
         n-=e
         emm = m.copy()
@@ -183,7 +184,7 @@ if __name__ == '__main__':
             vel = velc
             m = emm[a]
         if n == 0:
-            print("all particles have escaped")
+            print("all particles have escaped")_mesh
             break
         xs[i]=x; ys[i]=y
         if plot:
