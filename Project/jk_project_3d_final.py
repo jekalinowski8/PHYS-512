@@ -15,10 +15,10 @@ except:
     pass
 
 G=1 #gravitationnal constant
-ic = 'orbit' #initial conditions
+ic = 'stationar' #initial conditions
 
 dt=0.001
-T=3
+T=1
 plot = 0
 
 if not plot: 
@@ -40,15 +40,20 @@ elif ic == 'orbit':
     m = np.array([2,.000001])
     periodic = False
     
-elif ic == 'ptest': 
-    n = 2
-    pos = np.array([[0.9,0.9,0.9],[0.1,0.1,0.1]])
-    vel = np.array([[0,0,0],[0,0,0]])
-    m = np.array([1,1])
+
+
+elif ic == 'q4': 
     periodic = True
-    
+    print("Setting up initial conditions, q4")
+    ks = np.arange(10)
+    fm = np.zeros(10,10,10)
+    for i in range(10):
+        for j in range(10):
+            for l in range(10):
+                k =3 
 else:
     n=100000
+    periodic = False
     pos = np.random.rand(n,3)
     vel = (np.random.rand(n,3)*2-1)*0
     m = np.random.rand(n)
@@ -61,7 +66,7 @@ def cal_energy(r,v,m,periodic=False,epsilon=0.05):
      return T+V
      
 def cal_force_mesh(r,m,grid=100,eps=0.05,periodic=False,calE=False):  
-    #t1 = ti.time()
+    #t1 = ti.time()64
     x = r[:,0]; y = r[:,1]; z=r[:,2]
     n = len(x)
     if not periodic: 
@@ -102,8 +107,8 @@ def cal_force_mesh(r,m,grid=100,eps=0.05,periodic=False,calE=False):
     digx[digx>=grid]=grid-1        
     digy[digy>=grid]=grid-1
     digz[digz>=grid]=grid-1
-    a = np.logical_or(np.logical_or(digx>=grid,digy>=grid),digz>=grid)
-    b = np.logical_or(np.logical_or(digx==0,digy==0),digz==0)
+    a = np.logical_or(np.logical_or(x>1,y>1),z>1)
+    b = np.logical_or(np.logical_or(x<0,y<0),z<0)
     a = np.logical_or(a,b)
     forces[:,0] = xgrad[digx,digy,digz]
     forces[:,1] = ygrad[digx,digy,digz]
@@ -141,8 +146,7 @@ N = int(T/dt)
 xs = np.zeros((N+2,n))
 ys = np.zeros((N+2,n))
 zs = np.zeros((N+2,n))
-fig = plt.figure()
-ax = p3.Axes3D(fig)
+
 if ic == 'orbit':
     xvals = np.linspace(0.25,0.75,num=1000)
     yvals1 = 0.25*(2-np.sqrt(-16*xvals**2+16*xvals-3))
@@ -160,26 +164,15 @@ while (t<T): #Simulate from 0 to T
     i+=1
     t += dt
     t2 = ti.time()
-    print("Progress: " + str(i) + "/" +str(N))
+    
     if i%100==0:
         print("Total Energy: "+str(cal_energy(pos,vel,m,periodic=periodic)))
-        print("Step " + str(i) + "/" +str(N) +";" + " Calculation Time per Iteration: "+ str(t2-t1))
+        #print("Step " + str(i) + "/" +str(N) +";" + " Calculation Time per Iteration: "+ str(t2-t1))
 """
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(xs,ys,zs)
-if ic == 'orbit':
-    ax.plot(xvals,yvals1,0.5)
-    ax.plot(xvals,yvals2,0.5)
-ax.set_zlabel('x')
-ax.set_zlabel('y')
-ax.set_zlabel('z')
-ax.set_xlim3d(0.05,1)
-ax.set_ylim3d(0.05,1)
-ax.set_zlim3d(0.05,1)
-plt.show()
-"""
-print("Animating:")
+ax.scatter(xs,ys,zs)fig = plt.figure()
+ax = p3.Axes3D(fig)
 scatters = [ ax.scatter(data[0][i,0:1], data[0][i,1:2], data[0][i,2:]) for i in range(data[0].shape[0]) ]
 iterations = N
 def animate_scatters(iteration,data, scatters):
@@ -193,7 +186,7 @@ ax.set_ylim3d([0,1])
 ax.set_ylabel('Y')
 ax.set_zlim3d([0,1])
 ax.set_zlabel('Z')
-ax.set_title('Orbit')
+ax.set_title('Stationary')
 if ic == 'orbit':
     ax.plot(xvals,yvals1,0.5,color='k',ls='--',zorder=20)
     ax.plot(xvals,yvals2,0.5,color='k',ls='--',zorder=21)      
@@ -204,6 +197,44 @@ mywriter = animation.FFMpegWriter(fps=30, metadata=dict(artist='Me'), bitrate=18
 #ani.save('orbit1.mp4', writer=mywriter)
 #print("Animation created")
 plt.show()
-
-
+if ic == 'orbit':
+    ax.plot(xvals,yvals1,0.5)
+    ax.plot(xvals,yvals2,0.5)
+ax.set_zlabel('x')
+ax.set_zlabel('y')
+ax.set_zlabel('z')
+ax.set_xlim3d(0.05,1)
+ax.set_ylim3d(0.05,1)
+ax.set_zlim3d(0.05,1)
+plt.show()
+"""
+"""
+print("Animating:")
+fig = plt.figure(figsize=(10,10))
+ax = p3.Axes3D(fig)
+scatters = [ ax.scatter(data[0][i,0:1], data[0][i,1:2], data[0][i,2:]) for i in range(data[0].shape[0]) ]
+iterations = N
+def animate_scatters(iteration,data, scatters):
+    for i in range(data[0].shape[0]):
+        scatters[i]._offsets3d = (data[iteration][i,0:1], data[iteration][i,1:2], data[iteration][i,2:])
+    return scatters
+#ax.view_init(25, 10)
+ax.set_xlim3d([0,1])
+ax.set_xlabel('X')
+ax.set_ylim3d([0,1])
+ax.set_ylabel('Y')
+ax.set_zlim3d([0,1])
+ax.set_zlabel('Z')
+ax.set_title('1000 Particles, Periodic')
+if ic == 'orbit':
+    ax.plot(xvals,yvals1,0.5,color='k',ls='--',zorder=20)
+    ax.plot(xvals,yvals2,0.5,color='k',ls='--',zorder=21)      
+ani = animation.FuncAnimation(fig, animate_scatters, iterations, fargs=(data, scatters), interval=50, blit=False, repeat=True)
+print("Done Animating")
+mywriter = animation.FFMpegWriter(fps=30, metadata=dict(artist='Me'), bitrate=1800, extra_args=['-vcodec', 'libx264'])
+#writer = Writer(fps=30, metadata=dict(artist='Me'), bitrate=1800, extra_args=['-vcodec', 'libx264'])
+#ani.save('orbit1.mp4', writer=mywriter)
+#print("Animation created")
+plt.show()
+"""
 
