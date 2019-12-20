@@ -1,6 +1,8 @@
 import numpy as np
+from numpy import fft 
 from matplotlib import pyplot as plt
 import time as ti
+from numba import jit
 from matplotlib import animation as animation
 from mpl_toolkits.mplot3d import Axes3D
 #TODO: Questions
@@ -54,6 +56,7 @@ else:
     
     
     
+@jit(nopython=True,fastmath=True,parallel=True)
 def compute_kernel(bgrid=256,eps=0.05):
     print("Computing Kernel")
     bgrid = np.int64(bgrid)
@@ -66,8 +69,8 @@ def compute_kernel(bgrid=256,eps=0.05):
                 r2[i,j,k]=(xs[i]**2)+(xs[j]**2)+(xs[k]**2)
     r = np.sqrt(r2+(grid*eps)**2)
     pot = -G/r
-    pot = np.fft.fftshift(pot)
-    fpot = np.fft.rfftn(pot)
+    pot = fft.fftshift(pot)
+    fpot = fft.rfftn(pot)
     print ("Kernel Finished")
     return fpot
 fpot = compute_kernel()
@@ -77,6 +80,7 @@ def cal_energy(r,v,m,periodic=False,epsilon=0.05):
      V = cal_force_mesh(r,m,periodic=periodic,calE=True)
      return T+V
      
+@jit(nopython=True,fastmath=True,parallel=True)
 def cal_force_mesh(r,m,grid=128,eps=0.05,periodic=False,calE=False):  
     t1 = ti.time()
     x = r[:,0]; y = r[:,1]; z=r[:,2]
@@ -104,8 +108,6 @@ def cal_force_mesh(r,m,grid=128,eps=0.05,periodic=False,calE=False):
     digy[digy>=grid]=grid-1
     digz[digz>=grid]=grid-1
     a = np.logical_or(np.logical_or(digx>=grid,digy>=grid),digz>=grid)
-    b = np.logical_or(np.logical_or(digx==0,digy==0),digz==0)
-    a = np.logical_or(a,b)
     forces[:,0] = xgrad[digx,digy,digz]
     forces[:,1] = ygrad[digx,digy,digz]
     forces[:,2] = zgrad[digx,digy,digz]
