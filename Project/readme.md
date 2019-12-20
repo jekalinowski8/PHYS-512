@@ -1,8 +1,10 @@
 This is my submission for the particle-mesh method n-body simulation. My method of integration is leapfrog.
 
+My code relies on numpy functions: np.histogramdd for the density mesh assignment, np.fft.rfftn/irfftn for the FFTs, and np.gradient for the numerical differentiation. After benchmarking, I found that my computations are currently bottlenecked by the FFTs. I tried a couple of other FFT libraries but saw minimal improvement. 
+
 Part 1) A single particle does in fact remain motionless. A (boring) animation of this is found in Animations/stationary.webm.
 
-Part 2) Particles prepare in a circular orbit continue to orbit: Animations/orbit.webm
+Part 2) Particles prepared in a circular orbit continue to orbit: Animations/orbit.webm
 
 Part 3) My code is able to handle 10^5 particles, but my animations (matplotlib) aren't. I provide an animation of the non-periodic/periodic case for 1000 particles, about the maximum I can animate, in Animations/collapse_nonperiodic.webm and Animations/collapse_periodic.webm.
 
